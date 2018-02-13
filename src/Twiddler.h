@@ -27,11 +27,10 @@ public:
   bool restart_simulation_;
   
   // Optimizer variables
-  double err_, prev_err_;
-  double step_rate_, dp_;
+  double step_rate_, dp_, err_, best_err_;
   vector<double> p_;
 
-  int branch_, nruns_, nsteps_, v_;
+  int direction_, nruns_, nsteps_, v_;
 
   /*
   * Constructor
@@ -49,9 +48,9 @@ public:
   void Init(bool optimize, double Kp_1, double Ki_1, double Kd_1, double Kp_2, double Ki_2, double Kd_2);
 
   void UpdateError(double cte, double speed_error);
-  double UpdateGradient(double gradErr, double partial);
   bool is_saturated(double command);
   void ResetPIDs();
+  void ResetTwiddle();
   
 };
 

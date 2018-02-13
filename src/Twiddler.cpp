@@ -22,6 +22,7 @@ void Twiddler::Init(bool optimize, double Kp_1, double Ki_1, double Kd_1, double
     restart_simulation_ = false;
 
     p_ = std::vector<double>(6);
+    
     p_[0] = Kp_1;
     p_[1] = Ki_1;
     p_[2] = Kd_1;
@@ -29,26 +30,12 @@ void Twiddler::Init(bool optimize, double Kp_1, double Ki_1, double Kd_1, double
     p_[4] = Ki_2;
     p_[5] = Kd_2;
     
+    best_err_ = std::numeric_limits<double>::infinity();
+    ResetTwiddle();
     ResetPIDs();
     
-    prev_err_ = 0;
+    v_ = 2;
 
-    nruns_ = 0;
-    step_rate_ = 0.5/100;
-    v_ = 0;
-    dp_ = 0;
-
-}
-
-double Twiddler::UpdateGradient(double gradErr, double partial) {
-    /*
-    NOTE :
-        If the Twiddler was the main program, the algorithm would begin
-    exactly as presented in the lecture notes.     
-        But this class was designed to be plugged in an operating environment, so we need to track where we are in the scan loop. N
-    */
-    
-    return gradErr*partial;
 }
 
 void Twiddler::UpdateError(double cte, double speed_error){
@@ -67,33 +54,59 @@ void Twiddler::UpdateError(double cte, double speed_error){
     
     nsteps_++;
     
-    err_ += cte + speed_error;
+    err_ += pow(cte + 0*speed_error, 2);
     restart_simulation_ = optimize_ && (fabs(cte) > 2.5);
     
+    double tol = 1E-3;
     if (restart_simulation_){
         
+        err_/= nsteps_; // RMS
+        // err_ = -nsteps_;
         
-        /*
-        
-        p_[0] -= step_rate_*UpdateGradient(-pid_steer.p_cum, err_)/sqrt(nsteps_);
-        p_[1] -= step_rate_*UpdateGradient(-pid_steer.i_cum, err_)/sqrt(nsteps_);
-        p_[2] -= step_rate_*UpdateGradient(-pid_steer.d_cum, err_)/sqrt(nsteps_);
-        
-        p_[3] -= step_rate_*UpdateGradient(-pid_throttle.p_cum, err_)/sqrt(nsteps_);
-        p_[4] -= step_rate_*UpdateGradient(-pid_throttle.i_cum, err_)/sqrt(nsteps_);
-        p_[5] -= step_rate_*UpdateGradient(-pid_throttle.d_cum, err_)/sqrt(nsteps_);
-        
-        */
-        
-        /*
-        for (v_ = 0; v_ < 6 ; v_ ++){
-           p_[v_] = fmin(fmax(p_[v_], 1E-8), 10);
-        }*/
-        prev_err_ = err_;
-        
-        ResetPIDs();
-        // Terminates run
-        nruns_++;
+        if (nruns_ == 0){
+            best_err_ = err_; // First run for twiddle
+            cout << "Setting up error and first search " << endl;
+            p_[v_] += dp_;
+        }
+        else{
+            if(err_ < best_err_){
+                if (direction_ == 0){
+                    best_err_ = err_; 
+                    dp_*= (1 + step_rate_);
+                    p_[v_] += dp_;
+                }
+                else{
+                    dp_*= (1 + step_rate_/2);
+                    direction_ = 0;
+                }
+                
+            }
+            else{
+                cout << "No improvement...";
+                
+                if (direction_ == 0){
+                    cout << " searching other direction" << endl;
+                    p_[v_] -= 2.0*dp_;
+                    direction_++;
+                }
+                else{
+                    cout << " shrinking step and moving forward again" << endl;
+                    p_[v_] += dp_;
+                    dp_*= (1 - step_rate_);
+                    direction_ = 0;
+                    p_[v_] += dp_;
+                }
+            }
+        }
+        if (fabs(dp_) < tol) {
+            v_++;
+            ResetTwiddle();
+        }
+        else{
+            nruns_++;
+            cout << "Current dp " << dp_ << endl;
+            ResetPIDs();
+        }
     }
 }
 
@@ -112,4 +125,11 @@ void Twiddler::ResetPIDs(){
     
     cout << "PID 1 " << p_[0] << ", " << p_[1] << ", " <<  p_[2] << endl;
     cout << "PID 2 " << p_[3] << ", " << p_[4] << ", " <<  p_[5] << endl;
+}
+
+void Twiddler::ResetTwiddle(){
+    nruns_ = 0;
+    step_rate_ = 0.50;
+    direction_ = 0;
+    dp_ = 1;
 }

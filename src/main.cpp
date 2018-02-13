@@ -36,7 +36,8 @@ int main()
   Twiddler twiddler;
   // twiddler.Init(false, 0.04155, 0.0028, 2.8606,  0.381, 0.003, 3.2);
   // twiddler.Init(false, 0.0455, 0.0052,  3.82,  4.8, 0.004, 2.8);
-  twiddler.Init(false, 0.04155, 0.0058,  4.02,  4.8, 0.004, 2.8);
+  // twiddler.Init(false, 0.04155, 0.0058,  4.02,  4.8, 0.004, 2.8);
+  twiddler.Init(true, 0.0509698, 0.000969774,  3.82, 0, 0, 0);
   
 
   h.onMessage([&twiddler](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
@@ -75,7 +76,7 @@ int main()
             //std::cout << "CTE: " << cte << " Steering Value: " << steer_value << " Speed Signal : " << speed_error << std::endl;
             json msgJson;
             msgJson["steering_angle"] = steer_value;
-            msgJson["throttle"] = throttle;
+            msgJson["throttle"] = 1;
             auto msg = "42[\"steer\"," + msgJson.dump() + "]";
             // std::cout << msg << std::endl;
             ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
