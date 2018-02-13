@@ -27,7 +27,7 @@ public:
   bool restart_simulation_;
   
   // Optimizer variables
-  double err_, best_err_;
+  double err_, prev_err_;
   double step_rate_, dp_;
   vector<double> p_;
 
@@ -49,7 +49,7 @@ public:
   void Init(bool optimize, double Kp_1, double Ki_1, double Kd_1, double Kp_2, double Ki_2, double Kd_2);
 
   void UpdateError(double cte, double speed_error);
-  void UpdateGradient();
+  double UpdateGradient(double gradErr, double partial);
   bool is_saturated(double command);
   void ResetPIDs();
   

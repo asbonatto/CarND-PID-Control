@@ -9,6 +9,7 @@ public:
   double p_error;
   double i_error;
   double d_error;
+  double p_cum, i_cum = 0, d_cum = 0;
 
   /*
   * Coefficients

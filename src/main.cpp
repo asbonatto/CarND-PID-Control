@@ -34,7 +34,9 @@ int main()
   uWS::Hub h;
 
   Twiddler twiddler;
-  twiddler.Init(true, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1);
+  // twiddler.Init(false, 0.04155, 0.0028, 2.8606,  0.381, 0.003, 3.2);
+  // twiddler.Init(false, 0.0455, 0.0052,  3.82,  4.8, 0.004, 2.8);
+  twiddler.Init(false, 0.04155, 0.0058,  4.02,  4.8, 0.004, 2.8);
   
 
   h.onMessage([&twiddler](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
@@ -54,7 +56,7 @@ int main()
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
           double steer_value, throttle, speed_error;
           
-          speed_error = speed/100 - 1;
+          speed_error = speed/92 - 1;
           
           twiddler.UpdateError(cte, speed_error);
           steer_value = twiddler.steer_;
