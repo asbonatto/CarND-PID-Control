@@ -31,10 +31,10 @@ void Twiddler::Init(bool optimize, double Kp_1, double Ki_1, double Kd_1, double
     p_[5] = Kd_2;
     
     best_err_ = std::numeric_limits<double>::infinity();
-    ResetTwiddle();
-    ResetPIDs();
     
     v_ = 2;
+    ResetTwiddle();
+    ResetPIDs();
 
 }
 
@@ -55,13 +55,14 @@ void Twiddler::UpdateError(double cte, double speed_error){
     nsteps_++;
     
     err_ += pow(cte + 0*speed_error, 2);
-    restart_simulation_ = optimize_ && (fabs(cte) > 2.5);
+    restart_simulation_ = optimize_ && (fabs(cte) > 4.5 || nsteps_ > 2500);
     
     double tol = 1E-3;
     if (restart_simulation_){
         
+        cout << "# of steps " << nsteps_ << endl;
         err_/= nsteps_; // RMS
-        // err_ = -nsteps_;
+        //err_ = -nsteps_;
         
         if (nruns_ == 0){
             best_err_ = err_; // First run for twiddle
@@ -69,7 +70,8 @@ void Twiddler::UpdateError(double cte, double speed_error){
             p_[v_] += dp_;
         }
         else{
-            if(err_ < best_err_){
+            if (nsteps_ > 3){
+                if(err_ < best_err_){
                 if (direction_ == 0){
                     best_err_ = err_; 
                     dp_*= (1 + step_rate_);
@@ -97,14 +99,23 @@ void Twiddler::UpdateError(double cte, double speed_error){
                     p_[v_] += dp_;
                 }
             }
+            }
         }
-        if (fabs(dp_) < tol) {
+        if (fabs(dp_) < 0.01*p_[v_]) {
+            cout << "Finished variable optimization..." << endl;
             v_++;
+            v_ = fmod(v_, 3);
             ResetTwiddle();
         }
         else{
             nruns_++;
-            cout << "Current dp " << dp_ << endl;
+            if (fabs(p_[v_]) > tol){
+                cout << "Current dp (%) " << dp_/p_[v_] << endl;
+            }
+            else{
+                cout << "Current dp " << dp_ << endl;
+            }
+            
             ResetPIDs();
         }
     }
@@ -129,7 +140,15 @@ void Twiddler::ResetPIDs(){
 
 void Twiddler::ResetTwiddle(){
     nruns_ = 0;
-    step_rate_ = 0.50;
+    step_rate_ = 0.250;
     direction_ = 0;
-    dp_ = 1;
+    
+    if (fabs(p_[v_]) > 1E-8){
+        dp_ = p_[v_]*0.10;
+    }
+    else{
+        dp_ = 1;
+        cout << "Aqui" << endl;
+    }
+    
 }
