@@ -37,13 +37,13 @@ int main()
   // twiddler.Init(false, 0.04155, 0.0028, 2.8606,  0.381, 0.003, 3.2);
   // twiddler.Init(false, 0.0455, 0.0052,  3.82,  4.8, 0.004, 2.8);
   // twiddler.Init(false, 0.04155, 0.0058,  4.02,  4.8, 0.004, 2.8);
-  // twiddler.Init(true, 0.0509698, 0.000969774,  5, 0, 0, 0); // Twiddle
-  //twiddler.Init(false, 0.0509698,  0.00960,  4.988,  4.8, 0.004, 2.8);
+  // twiddler.Init(true, 0.0509698, 0.00969774,  5, 0, 0, 0); // Twiddle
+  //twiddler.Init(false, 0.0509698,  0.00969774,  4.988,  4.8, 0.004, 2.8);
   PID pid_s;
   PID pid_t;
   
-  pid_s.Init(0.04155,  0.0096,  4.988);
-  pid_t.Init(4.8, 0.004, 2.8);
+  pid_s.Init(0.0342,  0.0068,  3.988, "steering");
+  pid_t.Init(4.8000,  0.0040,  2.800, "throttle");
 
   h.onMessage([&pid_s, &pid_t](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.

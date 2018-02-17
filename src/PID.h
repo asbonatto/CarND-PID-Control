@@ -1,6 +1,12 @@
 #ifndef PID_H
 #define PID_H
 
+#include <math.h>
+#include <string>
+#include <iostream>
+using namespace std;
+
+
 class PID {
 public:
   /*
@@ -31,7 +37,7 @@ public:
   /*
   * Initialize PID.
   */
-  void Init(double Kp, double Ki, double Kd);
+  void Init(double Kp, double Ki, double Kd, string name);
 
   /*
   * Update the PID error variables given cross track error.

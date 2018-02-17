@@ -131,11 +131,9 @@ void Twiddler::ResetPIDs(){
     err_ = 0.0;
     nsteps_ = 0;
     
-    pid_steer.Init(p_[0], p_[1], p_[2]);
-    pid_throttle.Init(p_[3], p_[4], p_[5]);
-    
-    cout << "PID 1 " << p_[0] << ", " << p_[1] << ", " <<  p_[2] << endl;
-    cout << "PID 2 " << p_[3] << ", " << p_[4] << ", " <<  p_[5] << endl;
+    pid_steer.Init(p_[0], p_[1], p_[2], "steeering");
+    pid_throttle.Init(p_[3], p_[4], p_[5], "throttle");
+  
 }
 
 void Twiddler::ResetTwiddle(){

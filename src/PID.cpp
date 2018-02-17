@@ -1,6 +1,9 @@
 #include "PID.h"
 
 #include <math.h>
+#include <string>
+#include <iostream>
+
 
 using namespace std;
 
@@ -12,7 +15,7 @@ PID::PID() {}
 
 PID::~PID() {}
 
-void PID::Init(double Kp, double Ki, double Kd) {
+void PID::Init(double Kp, double Ki, double Kd, string name) {
     // Instantiates a PID controller and sets the error
     // terms to 0
     
@@ -26,6 +29,8 @@ void PID::Init(double Kp, double Ki, double Kd) {
     p_cum = 0;
     i_cum = 0;
     d_cum = 0;
+    
+    cout << name << " parameters :" << Kp << ", " << Ki << ", " << Kd << std::endl;
     
 }
 
