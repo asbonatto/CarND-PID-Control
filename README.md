@@ -3,9 +3,15 @@ Self-Driving Car Engineer Nanodegree Program
 
 ## Reflection
 
+PID control is very useful control method in case the engineer does not have a mathematical model of the system for more detailed techniques such as optimal control or pole placement. The technique creates an actuation signal based on the Proportional, Integral and Derivatives of the tracking error :
+
+1. The proportional gain acts on the instantaneous error of the system. If the gain is sufficiently positive the actuator tend to stabilize the system.
+2. The integral component is used to eliminate the steady-state error, or bias. In the case of the driving car, this component helped speed up the recovery during curves, as the tracking error accumulates.
+3. The derivative component acts as a "predictive" component that reacts faster than the proportional component in case of a sudden increase in error. This component makes the system converge to the reference trajectory faster and also dampens the oscillations.
+
 The classical tuning methods are based on the following steps:
 
-1. Determine the Kp coefficient so that the system has a fast response. Usually this is accomplished by increasing the proportional gain until the system is marginally stable, i.e., oscillates.
+1. Determine the Kp coefficient so that the system has a fast response. Usually this is accomplished by increasing the proportional gain until the system is marginally stable, i.e., oscillates. 
 2. Determine the Ki coefficient so that the steady state error vanishes. Usually the Ki coefficient is fairly small.
 3. Finally, increase the Kd coefficient until the rise time and overshoot are acceptable. Caution is needed to avoid destabilization of the system with too high Kd.
 
@@ -15,6 +21,7 @@ So I ran the twiddle algorithm once again and both the proportional and integral
 
 I made the car faster to respond by increasing the proportional and derivative gain, but I also made the car oscillate heavily when trying to center the trajectory at the bridge. To dampen the oscillation, I increased the integral gain until the car was able to complete the first turn and it also was able to complete the full track many times. The final parameters are presented in the code.
 
+During the tuning process it became clear that the best parameters for the steering control changed according to the target velocity. The final parameters in the code are very well suited to speeds of 92 mph, but the car is marginally stable during the first acceleration phase. One solution to this problem is to use a lookup table for the PID parameters and automatically swtich them according to the car's speed.
 
 ---
 # Compilation and run instructions

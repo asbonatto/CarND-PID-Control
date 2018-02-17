@@ -148,7 +148,6 @@ void Twiddler::ResetTwiddle(){
     }
     else{
         dp_ = 1;
-        cout << "Aqui" << endl;
     }
     
 }
