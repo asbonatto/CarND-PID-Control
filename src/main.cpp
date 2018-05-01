@@ -3,6 +3,8 @@
 #include "json.hpp"
 #include "PID.h"
 #include <math.h>
+#include <iostream>
+#include <fstream>
 #include "Twiddler.h"
 
 // for convenience
@@ -39,13 +41,19 @@ int main()
   // twiddler.Init(false, 0.04155, 0.0058,  4.02,  4.8, 0.004, 2.8);
   // twiddler.Init(true, 0.0509698, 0.00969774,  5, 0, 0, 0); // Twiddle
   //twiddler.Init(false, 0.0509698,  0.00969774,  4.988,  4.8, 0.004, 2.8);
-  PID pid_s;
-  PID pid_t;
-  
-  pid_s.Init(0.0342,  0.0068,  3.988, "steering");
-  pid_t.Init(4.8000,  0.0040,  2.800, "throttle");
 
-  h.onMessage([&pid_s, &pid_t](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  std::ifstream fconfig("../src/param.json");
+  json cfg;
+  fconfig >> cfg;
+
+  PID pid_s;
+  pid_s.Init(cfg["steering"]["P"],  cfg["steering"]["I"],  cfg["steering"]["D"], "steering");
+
+  PID pid_t;
+  pid_t.Init(cfg["throttle"]["P"],  cfg["throttle"]["I"],  cfg["throttle"]["D"], "throttle");
+  double fix_throttle = double(cfg["throttle"]["constant"]);
+
+  h.onMessage([&pid_s, &pid_t, fix_throttle](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -61,29 +69,32 @@ int main()
           double speed = std::stod(j[1]["speed"].get<std::string>());
           // double angle = std::stod(j[1]["steering_angle"].get<std::string>());
           double steer_value, throttle, speed_error;
-          
+
           speed_error = speed/92 - 1;
           pid_s.UpdateError(cte);
           steer_value = pid_s.TotalError();
-          
+
           pid_t.UpdateError(speed_error);
           throttle = pid_t.TotalError();
-          
+          if (fix_throttle > 0){
+            throttle = fix_throttle;
+          }
+
           /* Commented as requested by reviewer
           twiddler.UpdateError(cte, speed_error);
           steer_value = twiddler.steer_;
           throttle = twiddler.throttle_;
-          
+
           if (twiddler.restart_simulation_){
-            
+
             // https://discussions.udacity.com/t/twiddle-implementation-how-to-restart-the-sim/323578/5
             std::string reset_msg = "42[\"reset\",{}]";
             ws.send(reset_msg.data(), reset_msg.length(), uWS::OpCode::TEXT);
             twiddler.restart_simulation_ = false;
-            
+
           }
           else{ */
-              
+
             //std::cout << "CTE: " << cte << " Steering Value: " << steer_value << " Speed Signal : " << speed_error << std::endl;
             json msgJson;
             msgJson["steering_angle"] = steer_value;
